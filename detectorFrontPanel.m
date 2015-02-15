@@ -64,7 +64,7 @@ for i = 1:4
     handles.engine(i).Template=[1:32];          % Template for this engine
     handles.engine(i).nFilterCoef = 64;         % number of filter coeff 
     handles.engine(i).FilterFilename = '<none>';     % filter file name
-    handles.engine(i).nTemeplatePoints = 32;    % number of template points
+    handles.engine(i).nTemplatePoints = 32;    % number of template points
     handles.engine(i).TemplateFilename = '<none>';  % template file name
     handles.engine(i).FileEntryChoice = 'Filter';   % filter or template
     handles.engine(i).CurrentGraphSelection = 'None';
@@ -288,14 +288,6 @@ if strcmp(get(handles.figure1, 'SelectionType'), 'open')
                  get (serConn,'Status')
                  handles.serConn = serConn;  % store serCon in the handles structure
                  guidata(hObject,handles);
-                 % enable Tx text field and Rx button
-% %                 set(handles.TX_CMD,                 'Enable', 'On');
-% %                 set(handles.rxButton,               'Enable', 'On');
-% %                 set(handles.SetFPGAParameters,      'Enable', 'On');
-% %                 set(handles.GetFPFAStatus,          'Enable', 'On');
-% %                 set(handles.LaserTest,              'Visible', 'On');
-% %                 set(handles.LaserTest,              'Enable', 'On');
-% %                 set(handles.Start_Stop,             'Enable', 'On');
                   set(handles.ConnectToggle, 'String','Disconnect');
                   set(handles.ConnectToggle, 'Visible', 'On');
                   set(handles.ComPortSelection, 'Visible', 'Off');
@@ -305,10 +297,6 @@ if strcmp(get(handles.figure1, 'SelectionType'), 'open')
              end        
          end
      else
-% %        set(handles.TX_CMD,             'Enable', 'Off');
-% %        set(handles.rxButton,           'Enable', 'Off'); 
-% %        set(handles.SetFPGAParameters,  'Enable', 'Off');
-% %        set(handles.GetFPFAStatus,      'Enable', 'Off');
         set(handles.ConnectToggle, 'String', 'Connect');
         set(handles.ComPortSelection, 'Visible', 'On');
         fclose(handles.serConn);
@@ -647,7 +635,7 @@ function EnginePanelOK_Callback(hObject, eventdata, handles)
 % hObject    handle to EnginePanelOK (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-setEngineHardware(hObject,eventdata,handles);
+setEngineHardware(handles);
 set(handles.ProcessingEnginePanel,'Visible', 'Off');
 set(handles.ProgramEngineButton, 'Visible','On');
 set(handles.EventSeqButton, 'Visible', 'On');

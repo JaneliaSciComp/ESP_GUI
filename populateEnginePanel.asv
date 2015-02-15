@@ -39,13 +39,9 @@ set(handles.FilterFileText, 'String', handles.engine(handles.SelectedEngine).Fil
 % template filename
 set(handles.TemplateFileText, 'String', handles.engine(handles.SelectedEngine).TemplateFilename);
 
-% put up the plot of the appropriate function
-if (strcmp(handles.engine(handles.SelectedEngine).CurrentGraphSelection, 'Filter'))
+if (handles.engine(handles.SelectedEngine).CurrentGraphSelection == 'Filter')
     plot(handles.WaveformAxis, handles.engine(handles.SelectedEngine).Filter);
 else 
-    plot(handles.WaveformAxis, handles.engine(handles.SelectedEngine).Template);
-end
-
 
 
 
