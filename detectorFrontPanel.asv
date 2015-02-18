@@ -24,7 +24,7 @@ function varargout = detectorFrontPanel(varargin)
 
 % Edit the above text to modify the response to help detectorFrontPanel
 
-% Last Modified by GUIDE v2.5 13-Feb-2015 14:24:41
+% Last Modified by GUIDE v2.5 17-Feb-2015 19:10:30
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -70,6 +70,16 @@ for i = 1:4
     handles.engine(i).CurrentGraphSelection = 'None';
 end
 
+handles.selectedDtoAChannel = 1;
+for i=1:4
+    handles.dtoaChan(i).active = 0;
+    handles.dtoaChan(i).ChannelData = 1;            % 0 if Engine Data, 1 if Channel Data
+    handles.dtoaChan(i).HS = 1;                     % if Channel Data this is the HS
+    handles.dtoaChan(i).Channel = 1;                    % if CHannel Data this is the channel on the HS 
+    handles.dtoaChan(i).Engine = 1;                     % if Engine Data, this is the Engine #
+    handles.dtoaChan(i).Filter = 1;                 % 0 if LSD output, 1 if Filter output
+end
+
 handles.output = hObject;
     serialPorts = instrhwinfo('serial');
     nPorts = length(serialPorts.SerialPorts);
@@ -92,6 +102,8 @@ handles.output = hObject;
         set(handles.EventSeqButton, 'Visible', 'Off');
         set(handles.WaveformAxis, 'Visible','Off');
         set(handles.ProcessingEnginePanel,'Visible', 'Off');
+        set (handles.ProgramScope, 'Visible', 'Off');
+        set (handles.DtoAPanel, 'Visible', 'Off');
     end
    % Update handles structure
    handles.output = hObject;
@@ -122,79 +134,10 @@ function figure1_ResizeFcn(hObject, eventdata, handles)
 
 % --- Executes when selected object is changed in chanSelectPanel.
 function chanSelectPanel_SelectionChangeFcn(hObject, eventdata, handles)
-switch get(eventdata.NewValue, 'Tag')
-    case 'chanButton1'
-        chan = 1;
-    case 'chanButton2'
-        chan = 2;
-    case 'chanButton3'
-        chan = 3;
-    case 'chanButton4'
-        chan = 4;
-    case 'chanButton5'
-        chan = 5;
-    case 'chanButton6'
-        chan = 6;
-    case 'chanButton7'
-        chan = 7;
-    case 'chanButton8'
-        chan = 8;
-    case 'chanButton9'
-        chan = 9;
-    case 'chanButton10'
-        chan = 10;
-    case 'chanButton11'
-        chan = 11;
-    case 'chanButton12'
-        chan = 12;
-    case 'chanButton13'
-        chan = 13;
-    case 'chanButton14'
-        chan = 14;
-    case 'chanButton15'
-        chan = 15;
-    case 'chanButton16'
-        chan = 16;
-    case 'chanButton17'
-        chan = 17;
-    case 'chanButton18'
-        chan = 18;
-    case 'chanButton19'
-        chan = 19;
-    case 'chanButton20'
-        chan = 20;
-    case 'chanButton21'
-        chan = 21;
-    case 'chanButton22'
-        chan = 22;
-    case 'chanButton23'
-        chan = 23;
-    case 'chanButton24'
-        chan = 24;
-    case 'chanButton25'
-        chan = 25;
-    case 'chanButton26'
-        chan = 26;
-    case 'chanButton27'
-        chan = 27;
-    case 'chanButton28'
-        chan = 28;
-    case 'chanButton29'
-        chan = 29;
-    case 'chanButton30'
-        chan = 30;
-    case 'chanButton31'
-        chan = 31;
-    case 'chanButton32'
-        chan = 32;
-    otherwise
-        chan = 1;                            % default
-end
+chan = sscanf(get(hObject, 'String'), '%d', 1);
 handles.engine(handles.SelectedEngine).Channel = chan;
 guidata(hObject, handles);
-
-
-    
+   
 
 % hObject    handle to the selected object in chanSelectPanel 
 % eventdata  structure with the following fields (see UIBUTTONGROUP)
@@ -248,20 +191,6 @@ function popupmenu1_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function Untitled_2_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 
 % --- Executes on selection change in ComPortSelection.
@@ -318,23 +247,7 @@ end
 
 % --- Executes when selected object is changed in headStageSelectPanel.
 function headStageSelectPanel_SelectionChangeFcn(hObject, eventdata, handles)
-switch get(eventdata.NewValue, 'Tag')
-    case 'radiobutton69'
-        headstage = 1;
-    case 'radiobutton70'
-        headstage = 2;
-    case 'radiobutton71'
-        headstage = 3;
-    case 'radiobutton72'
-        headstage = 4;
-    case 'radiobutton114'
-        headstage = 5;
-    case 'radiobutton115'
-        headstage = 6;
-    otherwise
-        headstage = 1;
-end
-fprintf('HS Set  %d\n', headstage);
+headstage = sscanf(get(hObject, 'String'),'HS %d', 1);
 handles.engine(handles.SelectedEngine).HeadStage = headstage;
 guidata(hObject, handles);
 
@@ -448,42 +361,7 @@ function ProcessingEnginePanel_ButtonDownFcn(hObject, eventdata, handles)
 
 % --- Executes when selected object is changed in chanSelect16.
 function chanSelect16_SelectionChangeFcn(hObject, eventdata, handles)
-switch get(eventdata.NewValue, 'Tag')
-    case 'chan1'
-        chan = 1;
-    case 'chan2'
-        chan = 2;
-    case 'chan3'
-        chan = 3;
-    case 'chan4'
-        chan = 4;
-    case 'chan5'
-        chan = 5;
-    case 'chan6'
-        chan = 6;
-    case 'chan7'
-        chan = 7;
-    case 'chan8'
-        chan = 8;
-    case 'chan9'
-        chan = 9;
-    case 'chan10'
-        chan = 10;
-    case 'chan11'
-        chan = 11;
-    case 'chan12'
-        chan = 12;
-    case 'chan13'
-        chan = 13;
-    case 'chan14'
-        chan = 14;
-    case 'chan15'
-        chan = 15;
-    case 'chan16'
-        chan = 16;
-    otherwise
-        chan = 1;                            % default
-end
+chan = sscanf(get(hObject, 'String'), '%d', 1)
 handles.engine(handles.SelectedEngine).Channel = chan;
 guidata(hObject, handles);
 % hObject    handle to the selected object in chanSelect16 
@@ -504,6 +382,8 @@ function AmpConfigOK_Callback(hObject, eventdata, handles)
         otherwise
             handles.HSType = 16;
     end
+    % this section turns off the visibility of the HS buttons that are not
+    % valid based on the number of headstages entered
     % turn on HS 1 button, all others off
     set(handles.radiobutton69, 'Visible', 'On');
     set(handles.radiobutton70, 'Visible', 'Off');
@@ -511,6 +391,16 @@ function AmpConfigOK_Callback(hObject, eventdata, handles)
     set(handles.radiobutton72, 'Visible', 'Off');
     set(handles.radiobutton114, 'Visible', 'Off');
     set(handles.radiobutton115, 'Visible', 'Off');
+    
+    % only light up HS buttons that are valid, there are two panels with HS
+    % buttons, one for selecting Engine HS(above) and second(below) for DtoA channel HS
+    
+    set(handles.DHS1, 'Visible', 'On');
+    set(handles.DHS2, 'Visible', 'Off');
+    set(handles.DHS3, 'Visible', 'Off');
+    set(handles.DHS4, 'Visible', 'Off');
+    set(handles.DHS5, 'Visible', 'Off');
+    set(handles.DHS6, 'Visible', 'Off');
 
     switch get(get(handles.numHSgroup, 'SelectedObject'),'Tag')
         case 'numHS1'
@@ -518,21 +408,31 @@ function AmpConfigOK_Callback(hObject, eventdata, handles)
         case 'numHS2'
             handles.NumHS = 2;
             set(handles.radiobutton70, 'Visible', 'On');
+            set(handles.DHS2, 'Visible', 'On');
         case 'numHS3'
             handles.NumHS = 3;
             set(handles.radiobutton70, 'Visible', 'On');
             set(handles.radiobutton71, 'Visible', 'On');
+            set(handles.DHS2, 'Visible', 'On');
+            set(handles.DHS3, 'Visible', 'On');
        case 'numHS4'
             handles.NumHS = 4;
             set(handles.radiobutton70, 'Visible', 'On');
             set(handles.radiobutton71, 'Visible', 'On');
             set(handles.radiobutton72, 'Visible', 'On');
+            set(handles.DHS2, 'Visible', 'On');
+            set(handles.DHS3, 'Visible', 'On');
+            set(handles.DHS4, 'Visible', 'On');
         case 'numHS5'
             handles.NumHS = 5;
             set(handles.radiobutton70, 'Visible', 'On');
             set(handles.radiobutton71, 'Visible', 'On');
             set(handles.radiobutton72, 'Visible', 'On');
             set(handles.radiobutton114, 'Visible', 'On');
+            set(handles.DHS2, 'Visible', 'On');
+            set(handles.DHS3, 'Visible', 'On');
+            set(handles.DHS4, 'Visible', 'On');
+            set(handles.DHS5, 'Visible', 'On');
         case 'numHS6'
             handles.NumHS = 6;
             set(handles.radiobutton70, 'Visible', 'On');
@@ -540,6 +440,11 @@ function AmpConfigOK_Callback(hObject, eventdata, handles)
             set(handles.radiobutton72, 'Visible', 'On');
             set(handles.radiobutton114, 'Visible', 'On');
             set(handles.radiobutton115, 'Visible', 'On');
+            set(handles.DHS2, 'Visible', 'On');
+            set(handles.DHS3, 'Visible', 'On');
+            set(handles.DHS4, 'Visible', 'On');
+            set(handles.DHS5, 'Visible', 'On');
+            set(handles.DHS6, 'Visible', 'On');
         otherwise
             handles.NumHS = 1;
     end
@@ -548,15 +453,9 @@ guidata(hObject, handles);          % this saves data stored in 'handles'
 set(handles.configPanel, 'Visible', 'Off')
 set(handles.ProgramEngineButton, 'Visible', 'On');
 set(handles.EventSeqButton, 'Visible', 'On');
+set(handles.ProgramScope, 'Visible', 'On');
 handles.HSType
 handles.NumHS
-
-% --- If Enable == 'on', executes on mouse press in 5 pixel border.
-% --- Otherwise, executes on mouse press in 5 pixel border or over AmpConfigOK.
-function AmpConfigOK_ButtonDownFcn(hObject, eventdata, handles)
-% hObject    handle to AmpConfigOK (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
 
 % --- Executes when selected object is changed in numHSgroup.
@@ -635,7 +534,7 @@ function EnginePanelOK_Callback(hObject, eventdata, handles)
 % hObject    handle to EnginePanelOK (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-setEngineHardware(hObject,eventdata,handles);
+setEngineHardware(handles);
 set(handles.ProcessingEnginePanel,'Visible', 'Off');
 set(handles.ProgramEngineButton, 'Visible','On');
 set(handles.EventSeqButton, 'Visible', 'On');
@@ -761,25 +660,154 @@ function EventSeqButton_ButtonDownFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --- Executes on key press with focus on EngineWaveformListbox and none of its controls.
-function EngineWaveformListbox_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to EngineWaveformListbox (see GCBO)
-% eventdata  structure with the following fields (see UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+
+
+% --- Executes on button press in ProgramScope.
+function ProgramScope_Callback(hObject, eventdata, handles)
+% hObject    handle to ProgramScope (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set (handles.ProgramScope, 'Visible', 'Off');
+set (handles.DtoAPanel, 'Visible', 'On');
+putupDtoAChannelPanel(handles);
+guidata(hObject, handles);
+
+
+% --- Executes on button press in DChanSelectOK.
+function DChanSelectOK_Callback(hObject, eventdata, handles)
+% hObject    handle to DChanSelectOK (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set (handles.DtoAPanel, 'Visible', 'Off');
+set(handles.ProgramScope, 'Visible', 'On');
+
+
+% --- Executes when selected object is changed in D16Panel.
+function D16Panel_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in D16Panel 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+chan = sscanf(get(eventdata.NewValue, 'Tag'), 'SChan%d', 1);
+fprintf('chan:%d', chan);
+handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
+guidata(hObject, handles);
+str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
+            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+sendCommandString(handles, str);
+
+
+
+% --- Executes when selected object is changed in EngOutDisplay.
+function EngOutDisplay_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in EngOutDisplay 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+if(strcmp(get(eventdata.NewValue, 'Tag'), 'FilterOutButton'))
+    handles.dtoaChan(handles.selectedDtoAChannel).Filter = 1;
+else
+    handles.dtoaChan(handles.selectedDtoAChannel).Filter = 0;
+end
+guidata(hObject, handles);
+str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+            handles.dtoaChan(handles.selectedDtoAChannel).filter);
+sendCommandString(handles, str);
+
+% --- Executes when selected object is changed in DtoAChanSelect.
+function DtoAChanSelect_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in DtoAChanSelect 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
 % handles    structure with handles and user data (see GUIDATA)
 
+% set the currently selected channel in the handles structure
+handles.selectedDtoAChannel = sscanf(get(get(handles.DtoAChanSelect, 'SelectedObject'),'Tag'),'ScopeChan%d', 1);
+putupDtoAChannelPanel(handles);
+guidata(hObject, handles);
+if(handles.dtoaChan(handles.selectedDtoAChannel).ChannelData == 1)
+    str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
+            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+else
+    handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
+    str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+            handles.dtoaChan(handles.selectedDtoAChannel).filter);
+end
+sendCommandString(handles, str);
 
 
-
-
-
-% --- Executes on key press with focus on EnginePanelOK and none of its controls.
-function EnginePanelOK_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to EnginePanelOK (see GCBO)
-% eventdata  structure with the following fields (see UICONTROL)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% --- Executes when selected object is changed in SigSelect.
+function SigSelect_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in SigSelect 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
 % handles    structure with handles and user data (see GUIDATA)
+if(strcmp(get(hObject, 'String'), 'Channel Data'))
+    handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 1;
+    str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
+            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+else
+    handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
+    str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+            handles.dtoaChan(handles.selectedDtoAChannel).filter);
+end
+sendCommandString(handles, str);
+putupDtoAChannelPanel(handles);
+guidata(hObject, handles);
+
+
+% --- Executes when selected object is changed in DHSSelect.
+function DHSSelect_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in DHSSelect 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+handles.dtoaChan(handles.selectedDtoAChannel).HS = sscanf(get(get(handles.DHSSelect, 'SelectedObject'),'String'),'HS %d', 1);
+putupDtoAChannelPanel(handles);
+guidata(hObject, handles);
+str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
+            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+sendCommandString(handles, str);
+
+
+% --- Executes when selected object is changed in D32Panel.
+function D32Panel_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in D32Panel 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+chan = sscanf(get(eventdata.NewValue, 'Tag'), 'DChan%d', 1);
+handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
+guidata(hObject, handles);
+str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
+            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+sendCommandString(handles, str);
+
+
+
+% --- Executes when selected object is changed in DEngSelect.
+function DEngSelect_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in DEngSelect 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+eng = sscanf(get(eventdata.NewValue, 'Tag'), 'DEng%d', 1);
+handles.dtoaChan(handles.selectedDtoAChannel).Engine = eng;
+guidata(hObject, handles);
+str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+            handles.dtoaChan(handles.selectedDtoAChannel).filter);
+sendCommandString(handles, str);
