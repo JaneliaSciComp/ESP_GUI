@@ -650,18 +650,6 @@ function EventSeqButton_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-
-
-% --- If Enable == 'on', executes on mouse press in 5 pixel border.
-% --- Otherwise, executes on mouse press in 5 pixel border or over EventSeqButton.
-function EventSeqButton_ButtonDownFcn(hObject, eventdata, handles)
-% hObject    handle to EventSeqButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-
-
 % --- Executes on button press in ProgramScope.
 function ProgramScope_Callback(hObject, eventdata, handles)
 % hObject    handle to ProgramScope (see GCBO)
@@ -694,9 +682,9 @@ chan = sscanf(get(eventdata.NewValue, 'Tag'), 'SChan%d', 1);
 fprintf('chan:%d', chan);
 handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
-sendCommandString(handles, str);
+str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
+SendCommandString(handles, str);
 
 
 
@@ -714,9 +702,9 @@ else
     handles.dtoaChan(handles.selectedDtoAChannel).Filter = 0;
 end
 guidata(hObject, handles);
-str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
-            handles.dtoaChan(handles.selectedDtoAChannel).filter);
-sendCommandString(handles, str);
+str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+            handles.dtoaChan(handles.selectedDtoAChannel).Filter);
+SendCommandString(handles, str);
 
 % --- Executes when selected object is changed in DtoAChanSelect.
 function DtoAChanSelect_SelectionChangeFcn(hObject, eventdata, handles)
@@ -732,14 +720,14 @@ handles.selectedDtoAChannel = sscanf(get(get(handles.DtoAChanSelect, 'SelectedOb
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
 if(handles.dtoaChan(handles.selectedDtoAChannel).ChannelData == 1)
-    str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+    str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 else
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
-    str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
-            handles.dtoaChan(handles.selectedDtoAChannel).filter);
+    str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+            handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 end
-sendCommandString(handles, str);
+SendCommandString(handles, str);
 
 
 % --- Executes when selected object is changed in SigSelect.
@@ -752,14 +740,14 @@ function SigSelect_SelectionChangeFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 if(strcmp(get(hObject, 'String'), 'Channel Data'))
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 1;
-    str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+    str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 else
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
-    str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
-            handles.dtoaChan(handles.selectedDtoAChannel).filter);
+    str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+            handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 end
-sendCommandString(handles, str);
+SendCommandString(handles, str);
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
 
@@ -775,9 +763,9 @@ function DHSSelect_SelectionChangeFcn(hObject, eventdata, handles)
 handles.dtoaChan(handles.selectedDtoAChannel).HS = sscanf(get(get(handles.DHSSelect, 'SelectedObject'),'String'),'HS %d', 1);
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
-sendCommandString(handles, str);
+str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
+SendCommandString(handles, str);
 
 
 % --- Executes when selected object is changed in D32Panel.
@@ -791,9 +779,9 @@ function D32Panel_SelectionChangeFcn(hObject, eventdata, handles)
 chan = sscanf(get(eventdata.NewValue, 'Tag'), 'DChan%d', 1);
 handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
-sendCommandString(handles, str);
+str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
+SendCommandString(handles, str);
 
 
 
@@ -809,5 +797,5 @@ eng = sscanf(get(eventdata.NewValue, 'Tag'), 'DEng%d', 1);
 handles.dtoaChan(handles.selectedDtoAChannel).Engine = eng;
 guidata(hObject, handles);
 str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
-            handles.dtoaChan(handles.selectedDtoAChannel).filter);
-sendCommandString(handles, str);
+            handles.dtoaChan(handles.selectedDtoAChannel).Filter);
+SendCommandString(handles, str);

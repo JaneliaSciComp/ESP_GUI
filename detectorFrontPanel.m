@@ -682,8 +682,8 @@ chan = sscanf(get(eventdata.NewValue, 'Tag'), 'SChan%d', 1);
 fprintf('chan:%d', chan);
 handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
 
@@ -702,7 +702,7 @@ else
     handles.dtoaChan(handles.selectedDtoAChannel).Filter = 0;
 end
 guidata(hObject, handles);
-str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 SendCommandString(handles, str);
 
@@ -720,11 +720,11 @@ handles.selectedDtoAChannel = sscanf(get(get(handles.DtoAChanSelect, 'SelectedOb
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
 if(handles.dtoaChan(handles.selectedDtoAChannel).ChannelData == 1)
-    str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+    str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 else
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
-    str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+    str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 end
 SendCommandString(handles, str);
@@ -740,11 +740,11 @@ function SigSelect_SelectionChangeFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 if(strcmp(get(hObject, 'String'), 'Channel Data'))
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 1;
-    str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+    str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 else
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
-    str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+    str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 end
 SendCommandString(handles, str);
@@ -763,8 +763,8 @@ function DHSSelect_SelectionChangeFcn(hObject, eventdata, handles)
 handles.dtoaChan(handles.selectedDtoAChannel).HS = sscanf(get(get(handles.DHSSelect, 'SelectedObject'),'String'),'HS %d', 1);
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
 
@@ -779,8 +779,8 @@ function D32Panel_SelectionChangeFcn(hObject, eventdata, handles)
 chan = sscanf(get(eventdata.NewValue, 'Tag'), 'DChan%d', 1);
 handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).HS,...
-            handles.dtoaChan(handles.selectedDtoAChannel).Channel);
+str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+            (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
 
