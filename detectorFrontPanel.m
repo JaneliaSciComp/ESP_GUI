@@ -202,9 +202,9 @@ function ComPortSelection_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns ComPortSelection contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from ComPortSelection
 if strcmp(get(handles.figure1, 'SelectionType'), 'open')      
-     if strcmp(get(handles.ConnectToggle,'String'),'Connect') % currently disconnected
+     if strcmp(get(handles.ConnectToggle,'String'),'Connect') % if it says 'connect' then currently disconnected
          CPindex=get(handles.ComPortSelection,'Value');
-         if CPindex == 1                                       %fist line is "select " text
+         if CPindex == 1                                       %first line is "select " text
              errordlg('Select valid COM port');              % not a serial port name
          else
              comPortList = get(handles.ComPortSelection, 'String');
@@ -212,10 +212,15 @@ if strcmp(get(handles.figure1, 'SelectionType'), 'open')
      
              try
                  serConn = serial(comPortName, 'TimeOut', 1, ...
-                                                        'BaudRate', 9600);   
+                                                        'BaudRate', 9600);
+                 handles.serConn = serConn;
+                 guidata(hObject,handles);
+                 handles.serConn.BytesAvailableFcnMode = 'terminator';                      % set serial port to 'event' on a terminator
+                 handles.serConn.BytesAvailableFcn = {@serialLineCallback, handles};                   %assign the event callback function
+                 
+                 fprintf ('about to open serConn\n');
                  fopen(serConn);
                  get (serConn,'Status')
-                 handles.serConn = serConn;  % store serCon in the handles structure
                  guidata(hObject,handles);
                   set(handles.ConnectToggle, 'String','Disconnect');
                   set(handles.ConnectToggle, 'Visible', 'On');
@@ -232,6 +237,17 @@ if strcmp(get(handles.figure1, 'SelectionType'), 'open')
      end
 end
      guidata(hObject, handles);
+     try 
+        RxText = fscanf(handles.serConn);
+        if length(RxText) >= 1
+            currList = get(handles.SerialMonitorWindow, 'String');
+            currList = cat(1,get(handles.SerialMonitorWindow, 'String'), {RxText});
+            set(handles.SerialMonitorWindow, 'String', currList);
+            set(handles.SerialMonitorWindow, 'Value', length(currList) );
+        end
+    catch e
+        disp(e)
+end
 
 % --- Executes during object creation, after setting all properties.
 function ComPortSelection_CreateFcn(hObject, eventdata, handles)
@@ -682,7 +698,7 @@ chan = sscanf(get(eventdata.NewValue, 'Tag'), 'SChan%d', 1);
 fprintf('chan:%d', chan);
 handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
@@ -702,7 +718,7 @@ else
     handles.dtoaChan(handles.selectedDtoAChannel).Filter = 0;
 end
 guidata(hObject, handles);
-str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+str=sprintf('~D%d:e%d:s%1d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 SendCommandString(handles, str);
 
@@ -720,11 +736,11 @@ handles.selectedDtoAChannel = sscanf(get(get(handles.DtoAChanSelect, 'SelectedOb
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
 if(handles.dtoaChan(handles.selectedDtoAChannel).ChannelData == 1)
-    str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+    str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 else
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
-    str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+    str=sprintf('~D%d:e%d:s%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 end
 SendCommandString(handles, str);
@@ -740,11 +756,11 @@ function SigSelect_SelectionChangeFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 if(strcmp(get(hObject, 'String'), 'Channel Data'))
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 1;
-    str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+    str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 else
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
-    str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+    str=sprintf('~D%d:e%d:s%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 end
 SendCommandString(handles, str);
@@ -763,7 +779,7 @@ function DHSSelect_SelectionChangeFcn(hObject, eventdata, handles)
 handles.dtoaChan(handles.selectedDtoAChannel).HS = sscanf(get(get(handles.DHSSelect, 'SelectedObject'),'String'),'HS %d', 1);
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
@@ -779,7 +795,7 @@ function D32Panel_SelectionChangeFcn(hObject, eventdata, handles)
 chan = sscanf(get(eventdata.NewValue, 'Tag'), 'DChan%d', 1);
 handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
@@ -796,6 +812,6 @@ function DEngSelect_SelectionChangeFcn(hObject, eventdata, handles)
 eng = sscanf(get(eventdata.NewValue, 'Tag'), 'DEng%d', 1);
 handles.dtoaChan(handles.selectedDtoAChannel).Engine = eng;
 guidata(hObject, handles);
-str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+str=sprintf('~D%d:e%d:s%02d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 SendCommandString(handles, str);
