@@ -24,7 +24,7 @@ function varargout = detectorFrontPanel(varargin)
 
 % Edit the above text to modify the response to help detectorFrontPanel
 
-% Last Modified by GUIDE v2.5 17-Feb-2015 19:10:30
+% Last Modified by GUIDE v2.5 21-Oct-2016 11:39:38
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -58,7 +58,7 @@ handles.HSType = 0;
 for i = 1:4  
     handles.engine(i).HeadStage = 1;            % HS for this engine
     handles.engine(i).Channel = 1;              % Channel for this engine
-    handles.engine(i).Decimation = i;           % Decimation Factor for this engine
+    handles.engine(i).Decimation = 0;           % Decimation Factor for this engine
     handles.engine(i).Threshold = 45;           % Threshold for this engine
     handles.engine(i).Filter=[1:64];            % Filter for this engine
     handles.engine(i).Template=[1:32];          % Template for this engine
@@ -555,6 +555,7 @@ set(handles.ProcessingEnginePanel,'Visible', 'Off');
 set(handles.ProgramEngineButton, 'Visible','On');
 set(handles.EventSeqButton, 'Visible', 'On');
 set(handles.SerialMonitorWindow, 'Visible', 'On');
+set(handles.ProgramScope, 'Visible', 'On');
 
 % --- Executes on button press in ProgramEngineButton.
 function ProgramEngineButton_Callback(hObject, eventdata, handles)
@@ -564,8 +565,7 @@ function ProgramEngineButton_Callback(hObject, eventdata, handles)
 set(handles.EngineSelect, 'Visible', 'On');
 set(handles.ProgramEngineButton, 'Visible','Off');
 set(handles.EventSeqButton, 'Visible', 'Off');
-
-
+set(handles.ProgramScope, 'Visible', 'Off');
 
 % --- Executes on button press in SelectFilterButton.
 function SelectFilterButton_Callback(hObject, eventdata, handles)
@@ -672,6 +672,7 @@ function ProgramScope_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 set (handles.ProgramScope, 'Visible', 'Off');
+set(handles.ProgramEngineButton, 'Visible', 'Off');
 set (handles.DtoAPanel, 'Visible', 'On');
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
@@ -684,6 +685,7 @@ function DChanSelectOK_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 set (handles.DtoAPanel, 'Visible', 'Off');
 set(handles.ProgramScope, 'Visible', 'On');
+set(handles.ProgramEngineButton, 'Visible', 'On');
 
 
 % --- Executes when selected object is changed in D16Panel.
@@ -815,3 +817,17 @@ guidata(hObject, handles);
 str=sprintf('~D%d:e%d:s%02d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 SendCommandString(handles, str);
+
+
+% --- Executes on mouse press over figure background.
+function figure1_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function headStageSelectPanel_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to headStageSelectPanel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
