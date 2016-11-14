@@ -24,7 +24,7 @@ function varargout = detectorFrontPanel(varargin)
 
 % Edit the above text to modify the response to help detectorFrontPanel
 
-% Last Modified by GUIDE v2.5 17-Feb-2015 19:10:30
+% Last Modified by GUIDE v2.5 21-Oct-2016 11:39:38
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -58,7 +58,7 @@ handles.HSType = 0;
 for i = 1:4  
     handles.engine(i).HeadStage = 1;            % HS for this engine
     handles.engine(i).Channel = 1;              % Channel for this engine
-    handles.engine(i).Decimation = i;           % Decimation Factor for this engine
+    handles.engine(i).Decimation = 0;           % Decimation Factor for this engine
     handles.engine(i).Threshold = 45;           % Threshold for this engine
     handles.engine(i).Filter=[1:64];            % Filter for this engine
     handles.engine(i).Template=[1:32];          % Template for this engine
@@ -202,9 +202,9 @@ function ComPortSelection_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns ComPortSelection contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from ComPortSelection
 if strcmp(get(handles.figure1, 'SelectionType'), 'open')      
-     if strcmp(get(handles.ConnectToggle,'String'),'Connect') % currently disconnected
+     if strcmp(get(handles.ConnectToggle,'String'),'Connect') % if it says 'connect' then currently disconnected
          CPindex=get(handles.ComPortSelection,'Value');
-         if CPindex == 1                                       %fist line is "select " text
+         if CPindex == 1                                       %first line is "select " text
              errordlg('Select valid COM port');              % not a serial port name
          else
              comPortList = get(handles.ComPortSelection, 'String');
@@ -212,10 +212,15 @@ if strcmp(get(handles.figure1, 'SelectionType'), 'open')
      
              try
                  serConn = serial(comPortName, 'TimeOut', 1, ...
-                                                        'BaudRate', 9600);   
+                                                        'BaudRate', 9600);
+                 handles.serConn = serConn;
+                 guidata(hObject,handles);
+                 handles.serConn.BytesAvailableFcnMode = 'terminator';                      % set serial port to 'event' on a terminator
+                 handles.serConn.BytesAvailableFcn = {@serialLineCallback, handles};                   %assign the event callback function
+                 
+                 fprintf ('about to open serConn\n');
                  fopen(serConn);
                  get (serConn,'Status')
-                 handles.serConn = serConn;  % store serCon in the handles structure
                  guidata(hObject,handles);
                   set(handles.ConnectToggle, 'String','Disconnect');
                   set(handles.ConnectToggle, 'Visible', 'On');
@@ -232,6 +237,17 @@ if strcmp(get(handles.figure1, 'SelectionType'), 'open')
      end
 end
      guidata(hObject, handles);
+     try 
+        RxText = fscanf(handles.serConn);
+        if length(RxText) >= 1
+            currList = get(handles.SerialMonitorWindow, 'String');
+            currList = cat(1,get(handles.SerialMonitorWindow, 'String'), {RxText});
+            set(handles.SerialMonitorWindow, 'String', currList);
+            set(handles.SerialMonitorWindow, 'Value', length(currList) );
+        end
+    catch e
+        disp(e)
+end
 
 % --- Executes during object creation, after setting all properties.
 function ComPortSelection_CreateFcn(hObject, eventdata, handles)
@@ -539,6 +555,7 @@ set(handles.ProcessingEnginePanel,'Visible', 'Off');
 set(handles.ProgramEngineButton, 'Visible','On');
 set(handles.EventSeqButton, 'Visible', 'On');
 set(handles.SerialMonitorWindow, 'Visible', 'On');
+set(handles.ProgramScope, 'Visible', 'On');
 
 % --- Executes on button press in ProgramEngineButton.
 function ProgramEngineButton_Callback(hObject, eventdata, handles)
@@ -548,8 +565,7 @@ function ProgramEngineButton_Callback(hObject, eventdata, handles)
 set(handles.EngineSelect, 'Visible', 'On');
 set(handles.ProgramEngineButton, 'Visible','Off');
 set(handles.EventSeqButton, 'Visible', 'Off');
-
-
+set(handles.ProgramScope, 'Visible', 'Off');
 
 % --- Executes on button press in SelectFilterButton.
 function SelectFilterButton_Callback(hObject, eventdata, handles)
@@ -656,6 +672,7 @@ function ProgramScope_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 set (handles.ProgramScope, 'Visible', 'Off');
+set(handles.ProgramEngineButton, 'Visible', 'Off');
 set (handles.DtoAPanel, 'Visible', 'On');
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
@@ -668,6 +685,7 @@ function DChanSelectOK_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 set (handles.DtoAPanel, 'Visible', 'Off');
 set(handles.ProgramScope, 'Visible', 'On');
+set(handles.ProgramEngineButton, 'Visible', 'On');
 
 
 % --- Executes when selected object is changed in D16Panel.
@@ -682,7 +700,7 @@ chan = sscanf(get(eventdata.NewValue, 'Tag'), 'SChan%d', 1);
 fprintf('chan:%d', chan);
 handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
@@ -702,7 +720,7 @@ else
     handles.dtoaChan(handles.selectedDtoAChannel).Filter = 0;
 end
 guidata(hObject, handles);
-str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+str=sprintf('~D%d:e%d:s%1d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 SendCommandString(handles, str);
 
@@ -720,11 +738,11 @@ handles.selectedDtoAChannel = sscanf(get(get(handles.DtoAChanSelect, 'SelectedOb
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
 if(handles.dtoaChan(handles.selectedDtoAChannel).ChannelData == 1)
-    str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+    str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 else
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
-    str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+    str=sprintf('~D%d:e%d:s%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 end
 SendCommandString(handles, str);
@@ -740,11 +758,11 @@ function SigSelect_SelectionChangeFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 if(strcmp(get(hObject, 'String'), 'Channel Data'))
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 1;
-    str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+    str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 else
     handles.dtoaChan(handles.selectedDtoAChannel).ChannelData = 0;
-    str=sprintf('D%d:e%d:s%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
+    str=sprintf('~D%d:e%d:s%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).Engine-1),...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 end
 SendCommandString(handles, str);
@@ -763,7 +781,7 @@ function DHSSelect_SelectionChangeFcn(hObject, eventdata, handles)
 handles.dtoaChan(handles.selectedDtoAChannel).HS = sscanf(get(get(handles.DHSSelect, 'SelectedObject'),'String'),'HS %d', 1);
 putupDtoAChannelPanel(handles);
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
@@ -779,7 +797,7 @@ function D32Panel_SelectionChangeFcn(hObject, eventdata, handles)
 chan = sscanf(get(eventdata.NewValue, 'Tag'), 'DChan%d', 1);
 handles.dtoaChan(handles.selectedDtoAChannel).Channel = chan;
 guidata(hObject, handles);
-str=sprintf('D%d:h%d:c%d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
+str=sprintf('~D%d:h%d:c%02d\n', (handles.selectedDtoAChannel-1), (handles.dtoaChan(handles.selectedDtoAChannel).HS-1),...
             (handles.dtoaChan(handles.selectedDtoAChannel).Channel-1));
 SendCommandString(handles, str);
 
@@ -796,6 +814,20 @@ function DEngSelect_SelectionChangeFcn(hObject, eventdata, handles)
 eng = sscanf(get(eventdata.NewValue, 'Tag'), 'DEng%d', 1);
 handles.dtoaChan(handles.selectedDtoAChannel).Engine = eng;
 guidata(hObject, handles);
-str=sprintf('D%d:e%d:s%d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
+str=sprintf('~D%d:e%d:s%02d\n', handles.selectedDtoAChannel, handles.dtoaChan(handles.selectedDtoAChannel).Engine,...
             handles.dtoaChan(handles.selectedDtoAChannel).Filter);
 SendCommandString(handles, str);
+
+
+% --- Executes on mouse press over figure background.
+function figure1_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function headStageSelectPanel_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to headStageSelectPanel (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called

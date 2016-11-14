@@ -16,16 +16,22 @@ function setEngineHardware(handles)
     % Threshold  - Should be sent in unsigned Fixed point 16.12 format as a 4 character hex %
     sendString = sprintf('~T:E%1d:%s\n', (handles.SelectedEngine-1), hex(ufi(handles.engine(handles.SelectedEngine).Threshold, 16, 12))); 
     SendCommandString(handles, sendString);
+    % Filter Length 3 decimal digits
+    sendString = sprintf('~l:E%1d:%03d\n', (handles.SelectedEngine-1), handles.engine(handles.SelectedEngine).nFilterCoef);
+    SendCommandString(handles, sendString);
     %filter values are sent as a signed 16.15 fixedpoint numbers converted
     %to 4 hex digits
     for i=1:handles.engine(handles.SelectedEngine).nFilterCoef
-        sendString = sprintf('~f:E%1d:%03X %s\n', (handles.SelectedEngine-1), i-1, hex(sfi(handles.engine(handles.SelectedEngine).Filter(i), 16, 15)));
+        sendString = sprintf('~f:E%1d:%03x %s\n', (handles.SelectedEngine-1), i-1, hex(sfi(handles.engine(handles.SelectedEngine).Filter(i), 16, 15)));
         SendCommandString(handles, sendString);
     end
+    % template size 3 decimal digits
+    sendString = sprintf('~s:E%1d:%03d\n', (handles.SelectedEngine-1), handles.engine(handles.SelectedEngine).nTemplatePoints);
+    SendCommandString(handles, sendString);
     %template values are sent as a signed 16.15 fixedpoint numbers converted
     %to 4 hex digits
     for i=1:handles.engine(handles.SelectedEngine).nTemplatePoints
-        sendString = sprintf('~t:E%1d:%03X %s\n', (handles.SelectedEngine-1), i-1, hex(sfi(handles.engine(handles.SelectedEngine).Template(i), 16, 15)));
+        sendString = sprintf('~t:E%1d:%03x %s\n', (handles.SelectedEngine-1), i-1, hex(sfi(handles.engine(handles.SelectedEngine).Template(i), 16, 15)));
         SendCommandString(handles, sendString);
     end
     
